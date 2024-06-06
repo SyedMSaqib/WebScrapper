@@ -4,19 +4,27 @@ const cheerio = require("cheerio")
 const fs = require("fs")
 const path = require("path")
 
-const baseUrl = "https://github.com/"
-const url = new URL(baseUrl)
-const websiteName = url.hostname
-const links = []
-links.push(url.toString())
-const pageLimit = 10
 
+
+
+const Sites = ["https://github.com/","https://aniwatchtv.to/"]
+const links = []
+const pageLimit = 10
+let websiteName=""
+let url=""
+
+const AddBaseUrl=async(baseUrl)=>{
+
+ url = new URL(baseUrl)
+ websiteName = url.hostname
+links.push(url.toString())
+}
 const pagesLinks = (text) => {
   text("a").each((index, element) => {
     let link = text(element).attr("href")
     if (link) {
       if (!link.startsWith("http")) {
-        link = new URL(link, baseUrl).toString()
+        link = new URL(link, url).toString()
       }
       if (link.startsWith(url.origin) && link.split("/").length === 4) {
         links.push(link)
@@ -38,12 +46,13 @@ const cleanText = (html) => {
 
 const getPageNameFromUrl = (urlString) => {
   const urlObj = new URL(urlString)
-  const pathParts = urlObj.pathname.split("/").filter((part) => part !== "") // Filter out empty parts
+  const pathParts = urlObj.pathname.split("/").filter((part) => part !== "") 
   return pathParts[pathParts.length - 1]
 }
 
-const Scrapper = async () => {
+const Scrapper = async (url) => {
   try {
+    AddBaseUrl(url)
     let pageCount = 0
     let visitedLinks = new Set()
 
@@ -81,4 +90,10 @@ const Scrapper = async () => {
   }
 }
 
-Scrapper()
+const main = async () => {
+  for (let site of Sites) {
+    await Scrapper(site);
+  }
+};
+
+main();
